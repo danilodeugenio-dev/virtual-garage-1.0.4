@@ -1,207 +1,217 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Virtual Garage — Vanilla One-File</title>
-  <style>
-    :root { color-scheme: dark }
-    * { box-sizing: border-box }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:#0b0b0f; color:#fff;}
-    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
-    .card { background:#131319; border:1px solid #20202a; border-radius:16px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-    .title { text-align:center; font-weight:800; font-size:28px; margin: 8px 0 16px;}
-    .grid { display:grid; grid-template-columns: 1fr; gap:16px; }
-    .hero { width:100%; border-radius:14px; background:#0f0f14; overflow:hidden; }
-    .hero-img { width:100%; display:block; transform:perspective(800px) rotateY(0deg); opacity:0; transition: opacity .4s ease, transform .4s ease; }
-    .hero-img.show { opacity:1; transform:perspective(800px) rotateY(0deg); }
-    .controls label { display:block; font-size:13px; color:#a1a1b2; margin-bottom:6px; }
-    .btn { display:inline-block; padding:12px 16px; border-radius:12px; background:#2e5cff; border:0; color:#fff; font-weight:700; cursor:pointer; }
-    .stats { background:#181824; border-radius:14px; padding:12px 16px; }
-    .stats ul { list-style:none; padding:0; margin:0; }
-    .stats li { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); }
-    .stats li:last-child{ border-bottom:0; }
-    .muted { color:#a1a1b2; font-size:13px; }
-    .delta { color:#67f29a; font-size:13px; margin-left:8px; }
-    .thumbs { display:flex; gap:10px; overflow-x:auto; padding:10px 2px 2px; }
-    .thumb { min-width:110px; height:70px; border-radius:12px; border:2px solid transparent; background:#101017; overflow:hidden; cursor:pointer; }
-    .thumb--active { border-color:#fff; }
-    .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-    .badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:4px 10px; border-radius:999px; background:#1b1b27; border:1px solid #2a2a37; }
-    .sw { width:24px; height:24px; border-radius:999px; border:1px solid #2a2a37; display:inline-block; }
-    .sw.active { outline:2px solid #fff; }
-    input[type="range"] { width:100%; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Virtual Garage — Real Photos, Vanilla</title>
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0b0b0f;color:#fff}
+  .container{max-width:980px;margin:0 auto;padding:16px}
+  .title{text-align:center;font-weight:800;font-size:28px;margin:8px 0 16px}
+  .card{background:#131319;border:1px solid #20202a;border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .hero{position:relative;width:100%;border-radius:14px;background:#0f0f14;overflow:hidden;min-height:220px}
+  .hero img{width:100%;display:block;opacity:0;transform:translateY(0);transition:opacity .35s ease, transform .35s ease, filter .2s}
+  .hero img.show{opacity:1}
+  .hero img.low{transform:translateY(8px)} /* simulazione assetto ribassato */
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;background:#1b1b27;border:1px solid #2a2a37}
+  .muted{color:#a1a1b2;font-size:13px}
+  .controls label{display:block;font-size:13px;color:#a1a1b2;margin:10px 0 6px}
+  .btn{display:inline-block;padding:12px 16px;border-radius:12px;background:#2e5cff;border:0;color:#fff;font-weight:700;cursor:pointer}
+  input[type="range"]{width:100%}
+  .stats{background:#181824;border-radius:14px;padding:12px 16px}
+  .stats ul{list-style:none;padding:0;margin:0}
+  .stats li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .stats li:last-child{border-bottom:0}
+  .thumbs{display:flex;gap:10px;overflow-x:auto;padding:10px 2px 2px}
+  .thumb{min-width:110px;height:70px;border-radius:12px;border:2px solid transparent;background:#101017;overflow:hidden;cursor:pointer}
+  .thumb--active{border-color:#fff}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .sw{width:24px;height:24px;border-radius:999px;border:1px solid #2a2a37;display:inline-block}
+  .sw.active{outline:2px solid #fff}
+  footer{margin-top:18px;font-size:12px;color:#b7b7c9}
+  footer a{color:#9dc6ff;text-decoration:none}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="title">Virtual Garage — Vanilla One-File</div>
-    <div class="card">
-      <div class="grid">
-        <div class="hero">
-          <img id="hero" class="hero-img" alt="car"/>
+<div class="container">
+  <div class="title">Virtual Garage — Real Photos</div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="hero"><img id="hero" alt="car"/></div>
+
+      <div class="controls">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="carName" style="margin:8px 0">—</h2>
+          <span id="badge" class="badge">Preview: Stock</span>
         </div>
-        <div class="controls">
-          <div style="display:flex; justify-content:space-between; align-items:center">
-            <h2 id="carName" style="margin:8px 0">—</h2>
-            <span id="badge" class="badge">Preview: Stock</span>
-          </div>
 
-          <label>Color</label>
-          <div id="swatches" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px"></div>
+        <label>Color</label>
+        <div id="swatches" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
 
-          <label>Hue fine-tuning</label>
-          <input id="hue" type="range" min="-180" max="180" value="0"/>
+        <label>Hue fine-tuning</label>
+        <input id="hue" type="range" min="-180" max="180" value="0"/>
 
-          <div style="display:flex; gap:12px; align-items:center; margin-top:10px">
-            <label class="muted">
-              <input id="susp" type="checkbox"/> Suspension (visual + perf)
-            </label>
-            <button id="previewBtn" class="btn">Preview Changes</button>
-          </div>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:10px">
+          <label class="muted">
+            <input id="susp" type="checkbox"/> Suspension (visual + perf)
+          </label>
+          <button id="previewBtn" class="btn">Preview Changes</button>
+        </div>
 
-          <div class="stats" style="margin-top:12px">
-            <ul>
-              <li><span>Horse Power</span><span><span class="muted" id="hpBase">—</span><span style="margin:0 8px">→</span><strong id="hpVal">—</strong><span class="delta" id="hpDelta"></span></span></li>
-              <li><span>Torque</span><span><span class="muted" id="tqBase">—</span><span style="margin:0 8px">→</span><strong id="tqVal">—</strong><span class="delta" id="tqDelta"></span></span></li>
-              <li><span>Weight</span><span><span class="muted" id="wtBase">—</span><span style="margin:0 8px">→</span><strong id="wtVal">—</strong><span class="delta" id="wtDelta"></span></span></li>
-              <li><span>0-60 mph</span><span><span class="muted" id="zBase">—</span><span style="margin:0 8px">→</span><strong id="zVal">—</strong><span class="delta" id="zDelta"></span></span></li>
-            </ul>
-          </div>
+        <div class="stats" style="margin-top:12px">
+          <ul>
+            <li><span>Horse Power</span><span><span class="muted" id="hpBase">—</span><span style="margin:0 8px">→</span><strong id="hpVal">—</strong><span class="delta" id="hpDelta"></span></span></li>
+            <li><span>Torque</span><span><span class="muted" id="tqBase">—</span><span style="margin:0 8px">→</span><strong id="tqVal">—</strong><span class="delta" id="tqDelta"></span></span></li>
+            <li><span>Weight</span><span><span class="muted" id="wtBase">—</span><span style="margin:0 8px">→</span><strong id="wtVal">—</strong><span class="delta" id="wtDelta"></span></span></li>
+            <li><span>0-60 mph</span><span><span class="muted" id="zBase">—</span><span style="margin:0 8px">→</span><strong id="zVal">—</strong><span class="delta" id="zDelta"></span></span></li>
+          </ul>
         </div>
       </div>
     </div>
-
-    <div style="margin-top:12px">
-      <div class="muted">Garage (scroll →)</div>
-      <div id="thumbs" class="thumbs"></div>
-    </div>
   </div>
 
-  <script>
-  // ---- DATA ----
-  const CARS = [
-    { id:'nissan-350z', name:'Nissan 350Z', defaultColor:'white', hasTurbo:false,
-      base:{hp:287, tq:274, wt:3230, zero:5.4},
-      upg:{hp:315, tq:292, wt:3180, zero:5.1}},
-    { id:'bmw-e36-m', name:'BMW E36 M Coupé', defaultColor:'grey', hasTurbo:false,
-      base:{hp:240, tq:225, wt:3219, zero:5.6},
-      upg:{hp:260, tq:250, wt:3150, zero:5.2}},
-    { id:'subaru-wrx', name:'Subaru WRX', defaultColor:'blue', hasTurbo:true,
-      base:{hp:268, tq:258, wt:3290, zero:5.2},
-      upg:{hp:320, tq:310, wt:3230, zero:4.8}},
-    { id:'lamborghini-gallardo', name:'Lamborghini Gallardo Superleggera', defaultColor:'yellow', hasTurbo:false,
-      base:{hp:530, tq:375, wt:2950, zero:3.8},
-      upg:{hp:600, tq:420, wt:2850, zero:3.2}},
-  ];
-  const SWATCHES = ['white','silver','grey','black','blue','red','yellow','orange','green'];
+  <div style="margin-top:12px">
+    <div class="muted">Garage (scroll →)</div>
+    <div id="thumbs" class="thumbs"></div>
+  </div>
 
-  // ---- STATE ----
-  let idx = 0;
-  let color = CARS[0].defaultColor;
-  let hue = 0;
-  let preview = false;
-  let suspension = false;
+  <footer>
+    <div>Images: Nissan 350Z (CC BY 2.0 Greg Gjerdingen) :contentReference[oaicite:0]{index=0} ·
+      BMW M3 E36 (Public Domain, OSX) :contentReference[oaicite:1]{index=1} ·
+      Subaru WRX 2001 (Public Domain, Robert Merkel) :contentReference[oaicite:2]{index=2} ·
+      Lamborghini Gallardo Superleggera (CC BY-SA 2.0, David Villarreal Fernández) :contentReference[oaicite:3]{index=3}
+    </div>
+  </footer>
+</div>
 
-  // ---- DOM ----
-  const hero = document.getElementById('hero');
-  const carName = document.getElementById('carName');
-  const badge = document.getElementById('badge');
-  const swatches = document.getElementById('swatches');
-  const hueInput = document.getElementById('hue');
-  const susp = document.getElementById('susp');
-  const previewBtn = document.getElementById('previewBtn');
-  const thumbs = document.getElementById('thumbs');
+<script>
+/* === DATA (con URL immagini reali) === */
+const CARS = [
+  { id:'nissan-350z', name:'Nissan 350Z', defaultColor:'silver', hasTurbo:false,
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/03_Nissan_350Z_%287052304969%29.jpg/960px-03_Nissan_350Z_%287052304969%29.jpg',
+    base:{hp:287, tq:274, wt:3230, zero:5.4},
+    upg:{hp:315, tq:292, wt:3180, zero:5.1}},
+  { id:'bmw-e36-m', name:'BMW E36 M Coupé', defaultColor:'grey', hasTurbo:false,
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/1995-1999_BMW_M3_%28E36%29_coupe_01.jpg/960px-1995-1999_BMW_M3_%28E36%29_coupe_01.jpg',
+    base:{hp:240, tq:225, wt:3219, zero:5.6},
+    upg:{hp:260, tq:250, wt:3150, zero:5.2}},
+  { id:'subaru-wrx', name:'Subaru WRX', defaultColor:'green', hasTurbo:true,
+    img:'https://upload.wikimedia.org/wikipedia/commons/d/d8/Subaru_wrx_2001_forward_quarter_medium.jpg',
+    base:{hp:268, tq:258, wt:3290, zero:5.2},
+    upg:{hp:320, tq:310, wt:3230, zero:4.8}},
+  { id:'lamborghini-gallardo', name:'Lamborghini Gallardo Superleggera', defaultColor:'green', hasTurbo:false,
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Lamborghini_Gallardo_LP570-4_Superleggera.jpg/960px-Lamborghini_Gallardo_LP570-4_Superleggera.jpg',
+    base:{hp:530, tq:375, wt:2950, zero:3.8},
+    upg:{hp:600, tq:420, wt:2850, zero:3.2}},
+];
 
-  const hpBase = document.getElementById('hpBase');
-  const hpVal  = document.getElementById('hpVal');
-  const hpDelta= document.getElementById('hpDelta');
-  const tqBase = document.getElementById('tqBase');
-  const tqVal  = document.getElementById('tqVal');
-  const tqDelta= document.getElementById('tqDelta');
-  const wtBase = document.getElementById('wtBase');
-  const wtVal  = document.getElementById('wtVal');
-  const wtDelta= document.getElementById('wtDelta');
-  const zBase  = document.getElementById('zBase');
-  const zVal   = document.getElementById('zVal');
-  const zDelta = document.getElementById('zDelta');
+const SWATCHES = ['white','silver','grey','black','blue','red','yellow','orange','green'];
 
-  // ---- HELPERS ----
-  function svgCar(label){
-    const svg =
-      "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675'>" +
-      "<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>" +
-      "<stop offset='0%' stop-color='#1b1f2e'/>" +
-      "<stop offset='100%' stop-color='#101322'/></linearGradient></defs>" +
-      "<rect width='100%' height='100%' fill='url(#g)'/>" +
-      "<rect x='0' y='580' width='1200' height='95' fill='#5ad1ff'/>" +
-      "<text x='40' y='80' fill='#ffffff' font-size='48' font-family='Verdana, sans-serif'>"+label+"</text>" +
-      "<text x='40' y='640' fill='#000000' font-size='24' font-family='Verdana, sans-serif'>Virtual Garage — placeholder</text>" +
-      "</svg>";
-    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-  }
+/* === STATE === */
+let idx = 0;
+let color = CARS[0].defaultColor;
+let hue = 0;
+let preview = false;
+let suspension = false;
 
-  function setText(el, txt){ el.textContent = txt; }
-  function delta(val, base, unit){
-    const d = +(val - base).toFixed(1);
-    if (d === 0) return "";
-    const sign = d>0? "+":"";
-    return " ("+sign+d+unit+")";
-  }
+/* === DOM === */
+const hero = document.getElementById('hero');
+const carName = document.getElementById('carName');
+const badge = document.getElementById('badge');
+const swatches = document.getElementById('swatches');
+const hueInput = document.getElementById('hue');
+const susp = document.getElementById('susp');
+const previewBtn = document.getElementById('previewBtn');
+const thumbs = document.getElementById('thumbs');
 
-  function render(){
-    const car = CARS[idx];
-    carName.textContent = car.name;
-    badge.textContent = "Preview: " + (preview ? "Upgraded" : "Stock");
+const hpBase = document.getElementById('hpBase');
+const hpVal  = document.getElementById('hpVal');
+const hpDelta= document.getElementById('hpDelta');
+const tqBase = document.getElementById('tqBase');
+const tqVal  = document.getElementById('tqVal');
+const tqDelta= document.getElementById('tqDelta');
+const wtBase = document.getElementById('wtBase');
+const wtVal  = document.getElementById('wtVal');
+const wtDelta= document.getElementById('wtDelta');
+const zBase  = document.getElementById('zBase');
+const zVal   = document.getElementById('zVal');
+const zDelta = document.getElementById('zDelta');
 
-    const stats = preview ? car.upg : car.base;
-    setText(hpBase, car.base.hp + " HP");   setText(hpVal,  stats.hp + " HP");   setText(hpDelta, delta(stats.hp, car.base.hp, " HP"));
-    setText(tqBase, car.base.tq + " lb-ft");setText(tqVal,  stats.tq + " lb-ft");setText(tqDelta, delta(stats.tq, car.base.tq, " lb-ft"));
-    setText(wtBase, car.base.wt + " lbs");  setText(wtVal,  stats.wt + " lbs");  setText(wtDelta, delta(stats.wt, car.base.wt, " lbs"));
-    setText(zBase,  car.base.zero + " s");  setText(zVal,   stats.zero + " s");  setText(zDelta, delta(stats.zero, car.base.zero, " s"));
+/* === HELPERS === */
+function setText(el, txt){ el.textContent = txt; }
+function delta(val, base, unit){
+  const d = +(val - base).toFixed(1);
+  if (d === 0) return "";
+  const sign = d>0 ? "+" : "";
+  return " ("+sign+d+unit+")";
+}
+function loadImage(src, cb){
+  const img = new Image();
+  img.onload = () => cb(src);
+  img.onerror = () => cb(""); // fallback: non mostra nulla se l’URL fallisce
+  img.src = src;
+}
 
-    const label = car.id + " — " + color + (suspension? "-low" : "");
-    const src = svgCar(label);
+/* === RENDER === */
+function render(){
+  const car = CARS[idx];
+  carName.textContent = car.name;
+  badge.textContent = "Preview: " + (preview ? "Upgraded" : "Stock");
+
+  const stats = preview ? car.upg : car.base;
+  setText(hpBase, car.base.hp + " HP");   setText(hpVal,  stats.hp + " HP");   setText(hpDelta, delta(stats.hp,  car.base.hp,  " HP"));
+  setText(tqBase, car.base.tq + " lb-ft");setText(tqVal,  stats.tq + " lb-ft");setText(tqDelta, delta(stats.tq,  car.base.tq,  " lb-ft"));
+  setText(wtBase, car.base.wt + " lbs");  setText(wtVal,  stats.wt + " lbs");  setText(wtDelta, delta(stats.wt,  car.base.wt,  " lbs"));
+  setText(zBase,  car.base.zero + " s");  setText(zVal,   stats.zero + " s");  setText(zDelta,  delta(stats.zero,car.base.zero," s"));
+
+  // immagine principale
+  hero.classList.remove('show','low');
+  loadImage(car.img, (src)=>{
+    if(!src) return;
+    hero.src = src;
+    // colore: simulazione via hue-rotate
     hero.style.filter = "hue-rotate(" + hue + "deg)";
-    hero.classList.remove("show");
-    // preload + swap
-    const img = new Image();
-    img.onload = () => { hero.src = src; hero.classList.add("show"); };
-    img.src = src;
+    // assetto ribassato visivo
+    if (suspension) hero.classList.add('low');
+    hero.classList.add('show');
+  });
 
-    // swatches UI
-    swatches.innerHTML = "";
-    const palette = ['white','silver','grey','black','blue','red','yellow','orange','green'];
-    for(const c of palette){
-      const b = document.createElement("button");
-      b.className = "sw" + (c===color ? " active" : "");
-      b.style.background = c;
-      b.title = c;
-      b.onclick = () => { color = c; hue = 0; hueInput.value = 0; render(); };
-      swatches.appendChild(b);
-    }
-
-    // thumbs
-    thumbs.innerHTML = "";
-    CARS.forEach((c,i)=>{
-      const btn = document.createElement("button");
-      btn.className = "thumb " + (i===idx ? "thumb--active":"");
-      btn.onclick = () => { idx = i; color = CARS[i].defaultColor; hue = 0; hueInput.value = 0; preview = false; render(); };
-      const timg = new Image();
-      timg.alt = c.name;
-      timg.src = svgCar(c.id + " — " + c.defaultColor + " (thumb)");
-      btn.appendChild(timg);
-      thumbs.appendChild(btn);
-    });
+  // swatches
+  swatches.innerHTML = "";
+  for (const s of SWATCHES){
+    const b = document.createElement("button");
+    b.className = "sw" + (s===color ? " active" : "");
+    b.style.background = s;
+    b.title = s;
+    b.onclick = () => { color = s; hue = 0; hueInput.value = 0; render(); };
+    swatches.appendChild(b);
   }
 
-  // events
-  hueInput.addEventListener("input", (e)=>{ hue = parseInt(e.target.value,10)||0; hero.style.filter = "hue-rotate(" + hue + "deg)"; });
-  susp.addEventListener("change", (e)=>{ suspension = !!e.target.checked; render(); });
-  previewBtn.addEventListener("click", ()=>{ preview = true; render(); });
+  // thumbnails
+  thumbs.innerHTML = "";
+  CARS.forEach((c,i)=>{
+    const btn = document.createElement("button");
+    btn.className = "thumb " + (i===idx ? "thumb--active":"");
+    btn.onclick = () => { idx = i; color = CARS[i].defaultColor; hue = 0; hueInput.value = 0; preview = false; suspension = false; susp.checked = false; render(); };
+    const timg = new Image();
+    timg.alt = c.name;
+    timg.src = c.img;
+    btn.appendChild(timg);
+    thumbs.appendChild(btn);
+  });
+}
 
-  // init
-  render();
-  </script>
+/* === EVENTS === */
+document.getElementById('hue').addEventListener('input', (e)=>{ hue = parseInt(e.target.value,10)||0; hero.style.filter = "hue-rotate(" + hue + "deg)";});
+document.getElementById('susp').addEventListener('change', (e)=>{ suspension = !!e.target.checked; if (suspension) hero.classList.add('low'); else hero.classList.remove('low'); });
+document.getElementById('previewBtn').addEventListener('click', ()=>{ preview = true; render(); });
+
+/* === INIT === */
+render();
+</script>
 </body>
 </html>
